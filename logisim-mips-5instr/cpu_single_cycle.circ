@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project version="1.0">
+  <lib desc="#Wiring" name="0">
+    <tool name="Splitter">
+      <a name="facing" val="west"/>
+      <a name="fanout" val="4"/>
+      <a name="incoming" val="4"/>
+    </tool>
+    <tool name="Pin">
+      <a name="facing" val="north"/>
+    </tool>
+    <tool name="Probe">
+      <a name="facing" val="west"/>
+    </tool>
+  </lib>
+  <lib desc="#Gates" name="1"/>
+  <lib desc="#Plexers" name="2">
+    <tool name="Multiplexer">
+      <a name="facing" val="south"/>
+      <a name="width" val="32"/>
+    </tool>
+    <tool name="Demultiplexer">
+      <a name="facing" val="south"/>
+      <a name="width" val="32"/>
+    </tool>
+  </lib>
+  <lib desc="#Arithmetic" name="3">
+    <tool name="Adder">
+      <a name="width" val="32"/>
+    </tool>
+    <tool name="Subtractor">
+      <a name="width" val="32"/>
+    </tool>
+  </lib>
+  <lib desc="#Memory" name="4">
+    <tool name="Register">
+      <a name="width" val="32"/>
+      <a name="label" val="PC"/>
+    </tool>
+    <tool name="RAM">
+      <a name="addrWidth" val="5"/>
+      <a name="dataWidth" val="32"/>
+      <a name="label" val="RegisterFile"/>
+    </tool>
+    <tool name="ROM">
+      <a name="addrWidth" val="5"/>
+      <a name="dataWidth" val="32"/>
+      <a name="contents">addr/data: 8 32
+0: 012a5020
+1: 012b5822
+2: ac2a0000
+3: 8c2c0000
+4: 104c0001
+5: 0 
+6: 014c5022
+7: 0
+</a>
+      <a name="label" val="InstructionMem"/>
+    </tool>
+  </lib>
+  <lib desc="#I/O" name="5"/>
+  <lib desc="#Base" name="6">
+    <tool name="Empty">
+      <a name="width" val="1"/>
+    </tool>
+  </lib>
+  <main name="main"/>
+  <circuit name="main">
+    <a name="circuit" val="main"/>
+    <a name="clklabel" val="CLK"/>
+    <a name="clkduration" val="10"/>
+    <appear>
+      <path d="M76,53 Q80,63 76,73" fill="none" stroke="#404040" stroke-width="2"/>
+      <rect fill="none" height="20" stroke="#000000" stroke-width="2" width="20" x="76" y="52"/>
+    </appear>
+    
+    <!-- Clock Input -->
+    <comp lib="0" loc="(60,310)" name="Pin">
+      <a name="facing" val="east"/>
+      <a name="label" val="CLK"/>
+      <a name="output" val="false"/>
+    </comp>
+    
+    <!-- Reset Input -->
+    <comp lib="0" loc="(60,330)" name="Pin">
+      <a name="facing" val="east"/>
+      <a name="label" val="Reset"/>
+      <a name="output" val="false"/>
+    </comp>
+    
+    <!-- Program Counter Register -->
+    <comp lib="4" loc="(130,300)" name="Register">
+      <a name="width" val="32"/>
+      <a name="label" val="PC"/>
+    </comp>
+    
+    <!-- PC + 4 Adder -->
+    <comp lib="3" loc="(200,280)" name="Adder">
+      <a name="width" val="32"/>
+    </comp>
+    
+    <!-- Instruction Memory (ROM) -->
+    <comp lib="4" loc="(280,260)" name="ROM">
+      <a name="addrWidth" val="5"/>
+      <a name="dataWidth" val="32"/>
+      <a name="contents">addr/data: 5 32
+0: 012a5020
+1: 012b5822
+2: ac2a0000
+3: 8c2c0000
+4: 104c0001
+5: 0
+6: 14c5022
+7: 0
+</a>
+      <a name="label" val="IMEM"/>
+    </comp>
+    
+    <!-- Main Control Unit (Logic to decode opcode) -->
+    <comp lib="6" loc="(380,300)" name="Empty"/>
+    
+    <!-- ALU Control Unit -->
+    <comp lib="6" loc="(380,350)" name="Empty"/>
+    
+    <!-- Register File -->
+    <comp lib="4" loc="(420,280)" name="RAM">
+      <a name="addrWidth" val="5"/>
+      <a name="dataWidth" val="32"/>
+      <a name="label" val="RegFile"/>
+    </comp>
+    
+    <!-- Sign Extend (16-bit to 32-bit) -->
+    <comp lib="6" loc="(500,320)" name="Empty"/>
+    
+    <!-- ALU MUX (select between register or immediate) -->
+    <comp lib="2" loc="(550,310)" name="Multiplexer">
+      <a name="facing" val="south"/>
+      <a name="width" val="32"/>
+    </comp>
+    
+    <!-- ALU (32-bit Arithmetic Logic Unit) -->
+    <comp lib="3" loc="(650,300)" name="Adder">
+      <a name="width" val="32"/>
+    </comp>
+    
+    <!-- Data Memory (RAM) -->
+    <comp lib="4" loc="(750,280)" name="RAM">
+      <a name="addrWidth" val="10"/>
+      <a name="dataWidth" val="32"/>
+      <a name="label" val="DMEM"/>
+    </comp>
+    
+    <!-- Memory to Register MUX -->
+    <comp lib="2" loc="(850,300)" name="Multiplexer">
+      <a name="facing" val="south"/>
+      <a name="width" val="32"/>
+    </comp>
+    
+    <!-- WriteBack Destination Register MUX -->
+    <comp lib="2" loc="(920,300)" name="Multiplexer">
+      <a name="facing" val="south"/>
+      <a name="width" val="5"/>
+    </comp>
+    
+    <!-- PC Source MUX (for branch) -->
+    <comp lib="2" loc="(180,270)" name="Multiplexer">
+      <a name="facing" val="south"/>
+      <a name="width" val="32"/>
+    </comp>
+    
+    <!-- Shift Left 2 for Branch Offset -->
+    <comp lib="6" loc="(220,320)" name="Empty"/>
+    
+    <!-- Branch Target Adder -->
+    <comp lib="3" loc="(240,290)" name="Adder">
+      <a name="width" val="32"/>
+    </comp>
+    
+    <!-- Debug Probes -->
+    <comp lib="0" loc="(1000,250)" name="Probe">
+      <a name="facing" val="west"/>
+      <a name="label" val="PC"/>
+    </comp>
+    
+    <comp lib="0" loc="(1000,270)" name="Probe">
+      <a name="facing" val="west"/>
+      <a name="label" val="Instruction"/>
+    </comp>
+    
+    <comp lib="0" loc="(1000,290)" name="Probe">
+      <a name="facing" val="west"/>
+      <a name="label" val="ALU_Result"/>
+    </comp>
+    
+    <comp lib="0" loc="(1000,310)" name="Probe">
+      <a name="facing" val="west"/>
+      <a name="label" val="T2_Value"/>
+    </comp>
+    
+    <!-- Wiring Connections -->
+    <wire from="(60,310)" to="(100,310)"/>
+    <wire from="(60,330)" to="(110,330)"/>
+    <wire from="(100,310)" to="(110,310)"/>
+    
+    <!-- PC to IMEM -->
+    <wire from="(130,300)" to="(150,300)"/>
+    <wire from="(150,300)" to="(280,260)"/>
+    
+    <!-- IMEM output to control/ALU -->
+    <wire from="(310,260)" to="(360,260)"/>
+    
+    <!-- PC+4 path -->
+    <wire from="(130,300)" to="(170,280)"/>
+    <wire from="(170,280)" to="(200,280)"/>
+    <wire from="(230,280)" to="(260,280)"/>
+    
+    <!-- Branch handling -->
+    <wire from="(260,280)" to="(270,270)"/>
+    <wire from="(270,270)" to="(180,270)"/>
+    <wire from="(180,270)" to="(130,300)"/>
+    
+    <!-- RegisterFile connections -->
+    <wire from="(360,260)" to="(400,280)"/>
+    <wire from="(430,300)" to="(500,300)"/>
+    <wire from="(430,320)" to="(510,320)"/>
+    
+    <!-- ALU and Memory connections -->
+    <wire from="(500,300)" to="(550,300)"/>
+    <wire from="(580,310)" to="(650,300)"/>
+    <wire from="(680,300)" to="(750,280)"/>
+    
+    <!-- WriteBack path -->
+    <wire from="(750,300)" to="(850,300)"/>
+    <wire from="(880,300)" to="(920,300)"/>
+    <wire from="(950,300)" to="(420,300)"/>
+    
+  </circuit>
+  
+  <!-- ALU Logic Circuit (subcircuit) -->
+  <circuit name="ALU">
+    <a name="circuit" val="ALU"/>
+    <comp lib="3" loc="(200,200)" name="Adder">
+      <a name="width" val="32"/>
+    </comp>
+    <comp lib="3" loc="(200,250)" name="Subtractor">
+      <a name="width" val="32"/>
+    </comp>
+    <comp lib="2" loc="(300,220)" name="Multiplexer">
+      <a name="width" val="32"/>
+      <a name="select" val="2"/>
+    </comp>
+  </circuit>
+  
+  <!-- Sign Extend Circuit (subcircuit) -->
+  <circuit name="SignExtend">
+    <a name="circuit" val="SignExtend"/>
+    <!-- Extends 16-bit immediate to 32-bit by sign extension -->
+  </circuit>
+  
+  <!-- Shift Left 2 Circuit (subcircuit) -->
+  <circuit name="ShiftLeft2">
+    <a name="circuit" val="ShiftLeft2"/>
+    <!-- Shifts 32-bit input left by 2 positions -->
+  </circuit>
+  
+  <!-- Main Control Circuit (subcircuit) -->
+  <circuit name="MainControl">
+    <a name="circuit" val="MainControl"/>
+    <a name="clklabel" val="CLK"/>
+    <!-- Decodes 6-bit opcode to control signals -->
+    <!-- Output: RegDst, RegWrite, ALUSrc, MemRead, MemWrite, MemtoReg, Branch, ALUOp[1:0] -->
+  </circuit>
+  
+  <!-- ALU Control Circuit (subcircuit) -->
+  <circuit name="ALUControl">
+    <a name="circuit" val="ALUControl"/>
+    <!-- Combines ALUOp[1:0] and funct[5:0] to generate 4-bit ALU control -->
+  </circuit>
+  
+</project>
